@@ -1,0 +1,65 @@
+@startuml
+
+hide empty description
+
+state "Создана" as NEW
+state "Отправлена на проверку" as SUBMITTED
+state "Проведение проверки права на реструктуризацию" as IN_ELIGIBILITY_CHECK {
+ state "Проверка KYC-статуса" as KYC
+ state "Проверка кредитной истории" as HISTORY
+}
+state "Право подтверждено" as ELIGIBLE
+state "В реструктуризации \nотказано" as NOT_ELIGIBLE
+state "Варианты рассчитаны" as OPTIONS_GENERATED
+state "На внутреннем \nрассмотрении" as UNDER_REVIEW
+state "Одобрена" as APPROVED
+state "Отклонена" as REJECTED
+state "Ожидание подписания" as AWAITING_SIGNATURE
+state "Подписан" as SIGNED
+state "Отказ в подписи" as REFUSAL_TO_SIGN
+state "Условия обновлены" as CONTRACT_UPDATED
+state "Завершена" as COMPLETED
+state "Отменена" as CANCELLED
+
+state pravo <<choice>>
+state sogl <<choice>>
+state sig <<choice>>
+
+[*] -> NEW
+NEW -> SUBMITTED
+SUBMITTED -> IN_ELIGIBILITY_CHECK
+IN_ELIGIBILITY_CHECK -> pravo
+pravo -> ELIGIBLE : все проверки\nпройдены\nуспешно
+pravo -up-> NOT_ELIGIBLE : хотя бы одна \nпроверка не \nпройдена
+ELIGIBLE --> OPTIONS_GENERATED
+OPTIONS_GENERATED --> sogl
+sogl -left-> UNDER_REVIEW : требуется \nсогласование
+sogl --> APPROVED : автоматически \nсогласована
+UNDER_REVIEW -> APPROVED
+UNDER_REVIEW -left-> REJECTED : получен хотя бы \nодин отказ в \nсогласовании
+APPROVED -> AWAITING_SIGNATURE
+AWAITING_SIGNATURE -> sig
+sig --> REFUSAL_TO_SIGN : клиент отказался от \nреструктуризации
+sig --> SIGNED : электронно \nили лично
+SIGNED --> CONTRACT_UPDATED
+CONTRACT_UPDATED -left-> COMPLETED
+
+NEW --> CANCELLED
+SUBMITTED --> CANCELLED
+IN_ELIGIBILITY_CHECK --> CANCELLED
+ELIGIBLE --> CANCELLED
+OPTIONS_GENERATED -left-> CANCELLED
+UNDER_REVIEW -up-> CANCELLED
+
+KYC -> HISTORY
+
+note top of NEW
+ Ставится по факту
+ регистрации  в системе
+end note
+
+note top of IN_ELIGIBILITY_CHECK
+ Здесь есть ещё подстатусы
+end note
+
+@enduml

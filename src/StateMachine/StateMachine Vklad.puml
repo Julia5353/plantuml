@@ -1,0 +1,30 @@
+@startuml
+'https://plantuml.com/state-diagram
+
+scale 350 width
+
+state "Инициализирован" as PENDING
+state "Активен" as ACTIVE
+state "Временно приостановлен" as SUSPENDED
+state "Инициировано досрочное\n расторжение" as PREMATURE_CLOSURE
+state "Завершен" as CLOSED
+state "Отменен" as CANCELLED
+state "Срок вклада истёк" as MATURED_PENDING_CLOSURE
+state "Пролонгирован" as ROLLED_OVER
+state "Ошибка" as ERROR
+
+
+[*] --> PENDING
+PENDING --> ACTIVE
+ACTIVE -left-> SUSPENDED
+ACTIVE -left-> PREMATURE_CLOSURE
+ACTIVE --> CLOSED
+SUSPENDED --> CLOSED
+PREMATURE_CLOSURE --> CLOSED
+PENDING -> CANCELLED
+ACTIVE --> MATURED_PENDING_CLOSURE
+ACTIVE --> ROLLED_OVER
+PENDING --> ERROR
+ACTIVE --> ERROR
+
+@enduml

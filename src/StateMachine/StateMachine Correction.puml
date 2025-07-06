@@ -1,0 +1,26 @@
+@startuml
+
+state "Создана" as Create
+state "Исполнена" as Done
+state "Ошибка обработки" as ErrorDone
+state "В обработке" as Processing {
+ state "Зарегистрирована" as Registere
+ state "Проверена" as Rerified
+ state "Применена" as Applied
+}
+state "Отклонена" as Rejecte
+state "Отменена" as Cancel
+state "Проведена" as Carrie
+
+[*] -> Create
+Create -> Registere
+Registere -> Rerified
+Rerified -> Applied
+Applied --> Done
+Done --> Carrie
+Processing -> ErrorDone
+Create -up-> ErrorDone
+Create -d-> Cancel
+Processing -> Rejecte
+
+@enduml
