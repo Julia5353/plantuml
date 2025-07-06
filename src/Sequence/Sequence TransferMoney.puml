@@ -1,0 +1,29 @@
+@startuml
+
+title Перевод денег между двумя счетами
+
+actor Пользователь
+participant МобильноеПриложение as App
+participant БанкОтправителя as BankSender
+participant ПлатежнаяСистема as PS
+participant БанкПолучателя as BankReceiver
+
+Пользователь -> App : Инициирование перевода
+activate App
+App -> BankSender : Запрос на перевод
+activate BankSender
+BankSender -> BankSender : Проверка баланса
+alt Баланс достаточен
+    BankSender -> Пользователь : Запрос подтверждения
+    Пользователь -> BankSender : Подтверждение перевода
+    activate PS
+    BankSender -> PS : Запрос на перевод
+    PS -> BankReceiver : Перевод средств
+    deactivate PS
+    BankReceiver -> Пользователь : Уведомление о поступлении средств
+else Недостаточно средств
+    BankSender -> Пользователь : Ошибка: недостаточно средств
+deactivate BankSender
+deactivate App
+
+@enduml
