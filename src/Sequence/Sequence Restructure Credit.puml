@@ -1,0 +1,36 @@
+@startuml
+
+actor "Клиент" as Client
+participant "Мобильное \nприложение" as Front
+participant API_GW
+participant "Оркестратор" as Orcestr
+participant "Сервис \nреструктуризации" as RestructuringOrderService
+DataBase "Заявки на \nреструктуризацию" as RestructuringOrderDB
+Queue "Запрос анти-фрод" as queueFraudRequest
+participant "Анти-фрод \nсервис" as FraudService
+Queue "Ответ анти-фрод" as queueFraudResponse
+
+
+Client -> Front : Заполняет \nзаявку
+activate Client
+activate Front
+Front -> API_GW : Отправляет \nзапрос
+activate API_GW
+API_GW -> Orcestr : Отправляет \nзапрос
+activate Orcestr
+Orcestr -> Orcestr : Регистрирует \nтранзакцию
+Orcestr -> RestructuringOrderService : Регистрация \nзаявки
+activate RestructuringOrderService
+RestructuringOrderService -> RestructuringOrderDB : Регистрация \nзаявки
+activate RestructuringOrderDB
+RestructuringOrderDB --> RestructuringOrderService : id заявки
+deactivate RestructuringOrderDB
+RestructuringOrderService --> Orcestr : id заявки
+deactivate RestructuringOrderService
+Orcestr --> API_GW : id заявки
+API_GW --> Front : id заявки
+deactivate API_GW
+deactivate Front
+Orcestr ->> queueFraudRequest : Запрос на анти-фрод проверку
+
+@enduml
