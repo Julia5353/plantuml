@@ -1,0 +1,42 @@
+@startuml
+
+entity cat
+{
+  *PK id: int
+  --
+  name: string
+  age: int
+}
+
+entity food
+{
+  *PK id: int
+  --
+  *name: string
+  *FK type_food_id: int
+  calories: decimal
+}
+
+entity type_food
+{
+  *PK id: int
+  --
+  *name: string
+}
+
+entity feeding_session
+{
+  *PK id: int
+  --
+  *FK food_id: int
+  *FK feeding_session_id: int
+  name: string
+  date : timestamp
+}
+
+cat ||--|{ feeding_session
+food "1..*" }-- "0..*" type_food
+food --{ feeding_session
+
+@enduml
+

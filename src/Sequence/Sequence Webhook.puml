@@ -1,0 +1,56 @@
+@startuml
+
+participant "Клиент" as Client
+participant "Сервер" as Server
+DataBase "База данных \nвебхуков" as ServerDB
+participant "Клиент_Вебхук" as Webhook
+
+
+== Регистрация вебхука ==
+
+autonumber 1.1 1
+
+Client -> Server : Запрос на создание вебхука
+activate Client
+activate Server
+Server -> ServerDB : Сохранение ссылки
+activate ServerDB
+ServerDB -> ServerDB : Сохранение
+Server <-- ServerDB : Ок
+deactivate ServerDB
+Client <-- Server : Вебхук создан
+deactivate Server
+deactivate Client
+
+
+== Отправка данных на вебхук ==
+
+autonumber  2.1 1
+
+Client -> Server ++ : Запрос на выполнение\n бизнес-логики
+activate Client
+Client <-- Server : Ок
+deactivate Client
+Server -> Server : Выполнение
+Server -> ServerDB ++ : Получение ссылки
+Server <-- ServerDB --: Ок
+loop 3 попытки
+    Server -> Webhook : Отправка оповещения
+    alt ответ 200
+        Server <-- Webhook : Ок
+        activate Webhook
+        Webhook -> Webhook : Обработка оповещения
+        deactivate Webhook
+    else ответ 500
+        Server -> Server : Ждать 2 минуты
+    else ответ 400
+        Server -> Server : Выход из цикла
+    end
+end
+opt через 3 попытки не пришёл ответ 200 или пришёл ответ 400
+    Server -> Server : Записать в лог
+    Server -x Webhook : Прекратить повторные поптыки
+end
+
+
+@enduml

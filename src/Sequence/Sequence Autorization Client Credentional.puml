@@ -1,0 +1,14 @@
+@startuml
+
+participant Client
+participant AuthServer
+participant AnotherAPI
+
+autonumber
+
+Client -> AuthServer : сlient_id + client_secret
+Client <-- AuthServer : access token
+Client -> AnotherAPI : Запрос + access token
+Client <-- AnotherAPI : Данные
+
+@enduml

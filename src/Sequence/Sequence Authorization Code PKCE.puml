@@ -1,0 +1,31 @@
+@startuml
+actor ResourceOwner
+participant browser
+participant Client
+participant AuthServer
+participant ResourceServer
+
+autonumber
+
+ResourceOwner -> browser ++: Открывает страницу и\n инициализирует запрос
+browser -> Client ++ : Отправляет запрос
+Client -> Client : Генерирует code_verifier
+Client -> Client : Создаёт code_callenge
+Client -> AuthServer -- : Запрос на /auth + client_id \n+ code_callenge
+activate AuthServer
+AuthServer -> browser : форма авторизации
+ResourceOwner -> browser : Ввод авторизационных\n данных
+browser -> AuthServer : Данные авторизации
+AuthServer -> AuthServer : Проверка
+AuthServer --> browser : auth_code + redirect
+browser -> Client ++ : url из redirect + auth_code
+Client -> AuthServer : Запрос на /token + auth_code\n + code_verifier
+Client <-- AuthServer : access, refresh,\n id tokens
+deactivate AuthServer
+Client -> ResourceServer ++ : Запрос + access token
+ResourceServer -> ResourceServer : Проверка access token\n и обарботка запроса
+ResourceServer --> Client -- : Данные
+Client --> browser -- : Данные
+
+
+@enduml

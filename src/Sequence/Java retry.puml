@@ -1,0 +1,34 @@
+@startuml
+title Алгоритм повторных попыток HTTP-запроса (3 попытки, пауза 2 минуты)
+
+participant "Клиент" as Client
+participant "Сервер" as Server
+participant "Лог" as Log
+
+Client -> Log: log("Начало sendWithRetry(targetUrl)")
+
+loop попытки (максимум 3)
+    Client -> Server: HTTP-запрос
+    alt Ответ 200 (OK)
+        Server --> Client: HTTP 200
+        Client -> Log: log("Успешный ответ, завершаем цикл")
+    else Ошибка 500+ (внутренняя ошибка сервера)
+        Server --> Client: HTTP 500+
+        Client -> Log: log("Ошибка сервера, повтор через 2 минуты")
+        Client -> Client: ожидание 2 минуты
+    else Ошибка 400–499 (ошибка клиента)
+        Server --> Client: HTTP 4xx
+        Client -> Log: log("Ошибка клиента, повтор не требуется")
+    else Таймаут или сбой соединения
+        Client -> Log: log("Таймаут/сбой, повтор через 2 минуты")
+        Client -> Client: ожидание 2 минуты
+    end
+end
+
+alt Все попытки неуспешны
+    Client -> Log: log("Ответ не получен после 3 попыток. Соединение разорвано.")
+else Успех в одной из попыток
+    Client -> Log: log("sendWithRetry завершён успешно")
+end
+
+@enduml
