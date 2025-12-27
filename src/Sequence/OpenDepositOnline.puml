@@ -1,0 +1,82 @@
+@startuml
+
+Title Открытие вклада онлайн
+
+autonumber
+
+mainframe <color:Navy><size:16><font:Consolas>Диаграмма создания заявки с подписанием заявления ЭП
+
+skinparam sequenceReference {
+    HeaderBackgroundColor WHeat
+    BackgroundColor PapayaWhip
+    FontStyle bold
+    FontSize 14
+}
+
+actor "Клиент" as client
+participant "Сайт банка" as front
+participant ApiGateway
+participant "Сервис авторизации" as authService
+participant "Сервис вкладов" as depositService
+database "БД Вклады" as depositDB
+participant "Сервис договоров" as contractService
+queue new_deposit
+participant "Аналитика" as analyticsService
+
+
+client -> front : открыть
+
+== Аворизация ==
+loop 2 раза
+        client -> front : ввод авторизацион-\nных данных
+        front -> ApiGateway : запрос на авторизацию
+        ApiGateway -> authService : запрос на авторизацию
+        authService -> authService : проверка авториза-\n ционных данных
+        alt авторизационные данные верные
+            authService --> ApiGateway : разрешение доступа
+            ApiGateway --> front : разрешение доступа
+            front --> client : открыть главную страницу
+        else (авторизационные данные не верные) и (попытка < 3)
+            authService --> ApiGateway : ошибка доступа
+            ApiGateway --> front : ошибка доступа
+            front --> client : повторить ввод данных
+        else (авторизационные данные не верные) и (попытка = 3)
+            authService -> authService : заблокировать доступ\n на 5 минут
+            authService --> ApiGateway : информация о\n блокировке
+            ApiGateway --> front : информация о блокировке
+            front --> client : показать уведомление\n о блокировке
+        end
+end loop
+
+== Открытие вклада ==
+client -> front : открыть старницу\n вкладов
+front -> ApiGateway : запрос списка\n доступных вкладов
+ApiGateway -> depositService : запрос списка доступных вкладов
+depositService -> depositDB : запрос списка\n доступных вкладов
+depositDB -> depositDB : поиск доступных\n вкладов
+depositDB --> depositService : список доступных\n вкладов
+depositService --> ApiGateway : список доступных вкладов
+ApiGateway --> front : список доступных вкладов
+client -> front : выбор вклада\n для октрытия
+front -> client : отображение формы\n ввода данных
+client -> front : заполнение формы
+front -> front : проверка формы
+alt
+    
+end
+client -> front : подтверждает открытие\n вклада
+front -> ApiGateway : запрос на открытие вклада
+ApiGateway -> depositService : запрос на открытие вклада
+depositService -> depositService : проверка данных
+ref over depositService, contractService, client : Создать и подписать договор
+depositService -> depositDB : создать вклад
+depositService --> ApiGateway : данные по открытому вкладу
+ApiGateway --> front : данные по открытому вкладу
+front --> client : страница созданного вклада
+
+== Аналитика ==
+depositService -> new_deposit : данные по открытому вкладу
+analyticsService ->> new_deposit : вычитывает данные по\n открытому вкладу
+
+
+@enduml

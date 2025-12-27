@@ -1,0 +1,133 @@
+@startuml
+
+Title ER-диаграмма "Вклад", версия 1.0.0
+
+entity client
+{
+    * PK clinet_id: uuid
+    --
+    first_name: string, not null
+    last_name: string, not null
+    phone: string, not null
+    email: string
+    date_birthday: date, not null
+    *FK type_client_id: int
+    created_at: timestamp, not null
+    updated_at: timestamp
+    is_active: bool
+}
+
+entity type_client
+{
+    *PK type_client_id: int
+    --
+    name: string, not null
+    created_at: timestamp, not null
+    updated_at: timestamp
+    is_active: bool
+}
+
+entity deposit
+{
+    *PK deposit_id: uuid
+    --
+    number: string, not null
+    date_open: date, not null
+    *FK client_id: uuid, not null
+    *FK tempalte_deposit: int, not null
+    created_at: timestamp, not null
+    updated_at: timestamp
+    is_active: bool
+}
+
+entity tempalte_deposit
+{
+    *PK tempalte_deposit_id: int
+    --
+    name: string, not null
+    count_day: int. not null
+    *FK currency_id: int, not null
+    created_at: timestamp, not null
+    updated_at: timestamp
+    is_active: bool
+}
+
+entity currency
+{
+    *PK currency_id: int
+    --
+    name: string
+    code: string. not null
+    created_at: timestamp, not null
+    updated_at: timestamp
+    is_active: bool
+}
+
+entity contract
+{
+    *PK contract_id: uuid
+    --
+    number: string, not null
+    signed: bool, not null
+    *FK deposit_id: uuid
+    created_at: timestamp, not null
+    updated_at: timestamp
+    is_active: bool
+}
+
+entity operation
+{
+    *PK operation_id: uuid
+    --
+    *FK type_operation_id: int, not null
+    *FK deposit_id: uuid, not null
+    amount: decimal, not null
+    comment: string
+    created_at: timestamp, not null
+    updated_at: timestamp
+    is_active: bool
+}
+
+entity type_operation
+{
+    *PK type_operation_id: int
+    --
+    name: string
+    created_at: timestamp, not null
+    updated_at: timestamp
+    is_active: bool
+}
+
+
+client::type_client_id }o--|| type_client::type_client_id : имеет >
+deposit::client_id }o--|| client::client_id: открыт >
+tempalte_deposit::tempalte_deposit_id ||--o{ deposit::tempalte_deposit_id : реализовывает <
+tempalte_deposit::currency_id }o--|| currency::currency_id
+contract::deposit_id ||--|{ deposit::deposit_id : открыт по <
+type_operation::type_operation_id ||--o{ operation::type_operation_id
+deposit::deposit_id ||--|{ operation::deposit_id : выполняются по >
+
+
+note right of client : Описание сущности\n "Клиент"
+note right of type_client : "Описание сущности\n *Тип клиента*"
+note "Может содержать цифры,\nбуквы, спец.символы" as n_number_deposit
+note "Международный буквенный код" as n_currency_code
+note bottom of type_operation : Список значений: "Пополнение",\n "Закрытие", "Снятие"
+note bottom of operation: По факту явялется историей вклада
+
+
+n_number_deposit .. deposit::number
+n_currency_code .. currency::code
+
+footer Романова Юлия
+
+@enduml
+
+entity t
+{
+    *PK
+    --
+    created_at: timestamp, not null
+    updated_at: timestamp
+    is_active: bool
+}

@@ -29,14 +29,13 @@ entity feeding_session
   *PK id: int
   --
   *FK food_id: int
-  *FK feeding_session_id: int
-  name: string
+  *FK cat_id: int
   date : timestamp
 }
 
 cat ||--|{ feeding_session
-food "1..*" }-- "0..*" type_food
-food --{ feeding_session
+food "1..*" }o--|| "0..*" type_food
+food }|--o{ feeding_session
 
 @enduml
 
